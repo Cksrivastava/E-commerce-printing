@@ -201,6 +201,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ==========================================
+  // 6.1 Blog Posts Slider (Navigation Control)
+  // ==========================================
+  const blogPrev = document.querySelector('.blog-prev');
+  const blogNext = document.querySelector('.blog-next');
+  const blogGrid = document.querySelector('.blog-grid');
+  
+  if (blogPrev && blogNext && blogGrid) {
+    blogNext.addEventListener('click', () => {
+      // Smooth scroll the blog grid list to the right
+      blogGrid.scrollBy({
+        left: blogGrid.clientWidth,
+        behavior: 'smooth'
+      });
+    });
+
+    blogPrev.addEventListener('click', () => {
+      // Smooth scroll the blog grid list to the left
+      blogGrid.scrollBy({
+        left: -blogGrid.clientWidth,
+        behavior: 'smooth'
+      });
+    });
+  }
+
   // Add CSS styles to make team grid scrollable horizontally on mobile with arrows
   if (teamGrid) {
     teamGrid.style.scrollSnapType = 'x mandatory';
@@ -208,4 +233,121 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.scrollSnapAlign = 'start';
     });
   }
+
+  // ==========================================
+  // 7. Preloader Screen Fade-Out
+  // ==========================================
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+    window.addEventListener('load', () => {
+      preloader.classList.add('fade-out');
+    });
+    // Safety fallback in case window load fires before or takes too long
+    setTimeout(() => {
+      preloader.classList.add('fade-out');
+    }, 2000);
+  }
+
+  // ==========================================
+  // 8. Viewport Scroll Reveals (Intersection Observer)
+  // ==========================================
+  const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  if (revealElements.length > 0) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active-reveal');
+          // Unobserve to keep element visible once revealed
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    });
+    
+    revealElements.forEach(el => revealObserver.observe(el));
+  }
+
+  // ==========================================
+  // 9. Circular Scroll Progress (Back to Top)
+  // ==========================================
+  const backToTopBtn = document.getElementById('back-to-top-btn');
+  const progressPath = backToTopBtn ? backToTopBtn.querySelector('path') : null;
+
+  if (backToTopBtn && progressPath) {
+    const pathLength = progressPath.getTotalLength();
+    
+    // Setup initial stroke dash array properties
+    progressPath.style.transition = 'none';
+    progressPath.style.strokeDasharray = `${pathLength} ${pathLength}`;
+    progressPath.style.strokeDashoffset = pathLength;
+    progressPath.getBoundingClientRect(); // Trigger DOM reflow
+    progressPath.style.transition = 'stroke-dashoffset 10ms linear';
+    
+    const updateProgress = () => {
+      const scroll = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const progressOffset = pathLength - (scroll * pathLength / Math.max(height, 1));
+      progressPath.style.strokeDashoffset = progressOffset;
+      
+      // Toggle button visibility based on vertical scroll offset
+      if (scroll > 150) {
+        backToTopBtn.classList.add('active');
+      } else {
+        backToTopBtn.classList.remove('active');
+      }
+    };
+    
+    window.addEventListener('scroll', updateProgress);
+    
+    backToTopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // Run once initially to capture initial position
+    updateProgress();
+  }
+
+  // ==========================================
+  // 10. Testimonial Side Avatar Clicking Navigation
+  // ==========================================
+  if (slides.length > 0) {
+    slides.forEach((slide) => {
+      const leftAvatar = slide.querySelector('.testimonial-avatar-left');
+      const rightAvatar = slide.querySelector('.testimonial-avatar-right');
+      
+      if (leftAvatar) {
+        leftAvatar.addEventListener('click', () => {
+          showSlide(currentSlide - 1);
+        });
+      }
+      
+      if (rightAvatar) {
+        rightAvatar.addEventListener('click', () => {
+          showSlide(currentSlide + 1);
+        });
+      }
+    });
+  }
+
+  // ==========================================
+  // 11. Portfolio Expanding Cards Click Logic
+  // ==========================================
+  const portfolioCards = document.querySelectorAll('.portfolio-card');
+  if (portfolioCards.length > 0) {
+    portfolioCards.forEach(card => {
+      card.addEventListener('click', () => {
+        // Remove active class from all portfolio cards
+        portfolioCards.forEach(c => c.classList.remove('active'));
+        // Add active class to the clicked card
+        card.classList.add('active');
+      });
+    });
+  }
 });
+
